@@ -123,6 +123,7 @@ class Computer:
 			f = unpack('f', pack('I', int(s, 16)))[0]  # convert hex string to float
 			L.append(f)
 		pos = 0
+		if(len(L) != 24*24): raise Exception("Wrong answer")
 		while(pos+1 < len(L) and (L[pos] != 1.0 or abs(L[pos+1] - 0.47) > 0.01)):
 			pos += 1
 		L = L[pos:pos+24*24]
