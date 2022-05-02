@@ -40,7 +40,7 @@ def distance(a, b):
 
 def hill_climb(filename, iterations=200):
 	parameters = [len(c)//2 for c in choices]
-	best_score = evaluate(parameters, filename)
+	best_score, best_cycles = evaluate(parameters, filename)
 	best_parameters = [*parameters]
 	curr_score = best_score
 	prev_print=0
@@ -49,7 +49,7 @@ def hill_climb(filename, iterations=200):
 		random_change(new_parameters)
 		dist = distance(parameters, new_parameters)
 		if(dist == 0): continue
-		score = evaluate(new_parameters, filename)
+		score, cycles = evaluate(new_parameters, filename)
 		if(score < curr_score or score/curr_score<1.02 and dist>=2):
 			parameters = new_parameters
 			curr_score = score
@@ -58,6 +58,7 @@ def hill_climb(filename, iterations=200):
 				best_parameters = [*parameters]
 				print("\n=== NEW BEST ===")
 				print(build_computer(parameters))
+				print("Cycles:", cycles)
 				print("Score:", round(score, 2), "μsC$\n")
 		p = int((i+1)/iterations*50)
 		if(p != prev_print):
@@ -67,6 +68,7 @@ def hill_climb(filename, iterations=200):
 	best_computer = build_computer(best_parameters)
 	print("\n\n=== BEST COMPUTER ===")
 	print(best_computer)
+	print("Cycles:", best_cycles)
 	print("Score:", round(best_score, 3), "μsC$\n")
 
 	return (best_score, best_computer)
