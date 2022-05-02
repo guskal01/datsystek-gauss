@@ -2,47 +2,59 @@ import subprocess
 from struct import pack, unpack
 import solution
 
+
 class Cache:
 	def __init__(self, size, block_size, associativity):
-		assert(block_size in [1,2,4,8])
+		assert(block_size in [1, 2, 4, 8])
 		assert(size in [32, 64, 128])
-		assert(associativity in [1,2,4])
+		assert(associativity in [1, 2, 4])
 
 		self.size = size
 		self.block_size = block_size
 		self.associativity = associativity
 		self.block_count = size//block_size
 
-		assert(associativity <= self.block_count) # implied by above assertions
+		assert(associativity <= self.block_count)  # implied by above assertions
 
 	def __str__(self):
 		return f"{self.size} words \t{self.block_size} words/block \t{self.block_count} blocks \tassociativity {self.associativity}"
 
-
 	def get_cost(self):
-		if(self.size == 32): return 0
-		if(self.size == 64): return 25
-		if(self.size == 128): return 50
-		raise Exception("Unexpected size") 
+		if(self.size == 32):
+			return 0
+		if(self.size == 64):
+			return 25
+		if(self.size == 128):
+			return 50
+		raise Exception("Unexpected size")
 
 	def get_max_clock(self):
 		s = (self.size, self.associativity)
-		if(s == (32, 1)): return 500
-		if(s == (32, 2)): return 475
-		if(s == (32, 4)): return 450
-		if(s == (64, 1)): return 475
-		if(s == (64, 2)): return 450
-		if(s == (64, 4)): return 425
-		if(s == (128, 1)): return 450
-		if(s == (128, 2)): return 425
-		if(s == (128, 4)): return 400
+		if(s == (32, 1)):
+			return 500
+		if(s == (32, 2)):
+			return 475
+		if(s == (32, 4)):
+			return 450
+		if(s == (64, 1)):
+			return 475
+		if(s == (64, 2)):
+			return 450
+		if(s == (64, 4)):
+			return 425
+		if(s == (128, 1)):
+			return 450
+		if(s == (128, 2)):
+			return 425
+		if(s == (128, 4)):
+			return 400
 		raise Exception("Max clock not found")
 
 
 class Memory:
 	def __init__(self, write_buffer, first_access, next_access):
 		assert(0 <= write_buffer <= 12)
-		assert((first_access, next_access) in [(44,8), (30,6)])
+		assert((first_access, next_access) in [(44, 8), (30, 6)])
 		self.write_buffer = write_buffer
 		self.first_access = first_access
 		self.next_access = next_access
@@ -53,8 +65,10 @@ class Memory:
 	def get_cost(self):
 		s = (self.first_access, self.next_access)
 		buffer_cost = 3*self.write_buffer
-		if(s == (44, 8)): return 50 + buffer_cost
-		if(s == (30, 6)): return 100 + buffer_cost
+		if(s == (44, 8)):
+			return 50 + buffer_cost
+		if(s == (30, 6)):
+			return 100 + buffer_cost
 		raise Exception("Memory cost not found")
 
 
@@ -88,7 +102,8 @@ class Computer:
 
 	def run(self, filename):
 		args = self.get_cmd_args()
-		result = subprocess.run(f"java -jar Mars.jar {filename} {args} me dump .data HexText out.txt".split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		result = subprocess.run(f"java -jar Mars.jar {filename} {args} me dump .data HexText out.txt".split(
+		), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		returncode = result.returncode
 		stdout = result.stdout.decode('utf-8')
 		stderr = result.stderr.decode('utf-8')
@@ -101,38 +116,40 @@ class Computer:
 			raise Exception(f"Inf loop?\n{stderr}")
 		if(returncode != 0):
 			raise Exception(f"Unexpected return code {returncode}\n{stderr}")
-		
+
 		a = stdout.split()
 		L = []
 		for s in a:
-			f = unpack('f', pack('I', int(s, 16)))[0] #convert hex string to float
+			f = unpack('f', pack('I', int(s, 16)))[0]  # convert hex string to float
 			L.append(f)
 		pos = 0
+		if(len(L) != 24*24): raise Exception("Wrong answer")
 		while(pos+1 < len(L) and (L[pos] != 1.0 or abs(L[pos+1] - 0.47) > 0.01)):
 			pos += 1
 		L = L[pos:pos+24*24]
-		if(len(L) != 24*24): raise Exception("Wrong answer")
 		for x, y in zip(L, solution.solution):
-			if(abs(x-y) > 0.006):
+			if(abs(x - y) > 0.006):
 				raise Exception("Wrong answer")
 
 		cycles = int(a[-1])
-		runtime = cycles/self.get_clock() # μs
+		runtime = cycles/self.get_clock()  # μs
 		cost = self.get_cost()/100
 
-		return cost*runtime
+		return cost*runtime, cycles
 
 
 def all_caches():
-	for size in [32,64,128]:
-		for blocksize in [1,2,4,8]:
-			for associativity in [1,2,4]:
+	for size in [32, 64, 128]:
+		for blocksize in [1, 2, 4, 8]:
+			for associativity in [1, 2, 4]:
 				yield Cache(size, blocksize, associativity)
+
 
 def all_memories():
 	for write_buffer in range(13):
-		for (fa, sa) in [(44,8),(30,6)]:
+		for (fa, sa) in [(44, 8), (30, 6)]:
 			yield Memory(write_buffer, fa, sa)
+
 
 def all_computers():
 	for instruction_cache in all_caches():

@@ -8,6 +8,7 @@ from computer import Computer
 def exhaustive(filename):
 	best_score = 1e9
 	best_computer = None
+	best_cycles = 1e9
 	iter_computers = computer.all_computers()
 	batch_size = 4
 	nof_computers = 33696 # nof allowed computer configurations
@@ -19,12 +20,14 @@ def exhaustive(filename):
 		with concurrent.futures.ThreadPoolExecutor() as executor:
 			results = executor.map(Computer.run, batch, repeat(filename))
 
-			for score,c in zip(results, batch):
+			for (score, cycles),c in zip(results, batch):
 				if(score < best_score):
 					best_score = score
+					best_cycles = cycles
 					best_computer = c
 					print("\n=== NEW BEST ===")
 					print(c)
+					print("Cycles:", cycles)
 					print("Score:", round(score, 2), "μsC$\n")
 		tested_count += len(batch)
 		p = int(tested_count/nof_computers*1000)
@@ -34,6 +37,7 @@ def exhaustive(filename):
 
 	print("\n\n=== BEST COMPUTER ===")
 	print(best_computer)
+	print("Cycles:", best_cycles)
 	print("Score:", round(best_score, 3), "μsC$\n")
 
 	return (best_score, best_computer)
