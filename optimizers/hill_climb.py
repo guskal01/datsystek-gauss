@@ -1,4 +1,6 @@
 import random
+import concurrent.futures
+from itertools import repeat
 
 from computer import Cache, Computer, Memory
 
@@ -41,36 +43,41 @@ def random_change(parameters, p=0.5):
             return
 
 
-def distance(a, b):
-    return sum(abs(x[0] - x[1]) for x in zip(a, b))
-
-
 def hill_climb(filename, iterations=200):
+    threads = 3  # not faster to use more
     parameters = [len(c) // 2 for c in choices]
     best_score, best_cycles = evaluate(parameters, filename)
     best_parameters = [*parameters]
     curr_score = best_score
+    seen = {tuple(parameters)}
     prev_print = 0
     for i in range(iterations):
-        new_parameters = [*parameters]
-        random_change(new_parameters)
-        dist = distance(parameters, new_parameters)
-        if dist == 0:
-            continue
-        score, cycles = evaluate(new_parameters, filename)
-        if score < curr_score or score / curr_score < 1.02 and dist >= 2:
-            parameters = new_parameters
-            curr_score = score
-            if score < best_score:
-                best_score = score
-                best_parameters = [*parameters]
-                print("\n=== NEW BEST ===")
-                print(build_computer(parameters))
-                print("Cycles:", cycles)
-                print("Score:", round(score, 2), "μsC$\n")
-        p = int((i + 1) / iterations * 50)
+        batch = []
+        for j in range(threads):
+            new_parameters = None
+            while(new_parameters == None or tuple(new_parameters) in seen):
+                new_parameters = [*parameters]
+                random_change(new_parameters)
+            seen.add(tuple(new_parameters))
+            batch.append(new_parameters)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = executor.map(evaluate, batch, repeat(filename))
+
+        for (score, cycles), new_parameters in zip(results, batch):
+            if score < curr_score:
+                parameters = new_parameters
+                curr_score = score
+                if score < best_score:
+                    best_score = score
+                    best_parameters = [*parameters]
+                    print("\n=== NEW BEST ===")
+                    print(build_computer(parameters))
+                    print("Cycles:", cycles)
+                    print("Score:", round(score, 2), "μsC$\n")
+        p = int((i + 1) / iterations * 20)
         if p != prev_print:
-            print(str(p * 2) + "%")
+            print(str(p * 5) + "%")
             prev_print = p
 
     best_computer = build_computer(best_parameters)

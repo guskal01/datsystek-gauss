@@ -10,4 +10,4 @@ if __name__ == "__main__":
         filename = input("Enter filename: ")
     filename = "../" + filename
     # computer, score = optimizers.exhaustive(filename)
-    computer, score = optimizers.hill_climb(filename, 100)
+    computer, score = optimizers.hill_climb(filename, 35)
