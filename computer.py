@@ -141,6 +141,8 @@ class Computer:
             raise Exception("Wrong answer")
         for x, y in zip(L, solution.solution):
             if abs(x - y) > 0.006:
+                for i in range(24):
+                    print(*map(lambda l: "{:.2f}".format(l).rjust(6), L[i * 24 : (i + 1) * 24]))
                 raise Exception("Wrong answer")
 
         cycles = int(a[-1])
