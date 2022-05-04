@@ -4,6 +4,8 @@ from struct import pack, unpack
 
 import solution
 
+class AsmExecutionException(Exception):
+    pass
 
 class Cache:
     def __init__(self, size, block_size, associativity):
@@ -20,6 +22,9 @@ class Cache:
 
     def __str__(self):
         return f"{self.size} words \t{self.block_size} words/block \t{self.block_count} blocks \tassociativity {self.associativity}"
+
+    def __repr__(self):
+        return f"Cache({self.size}, {self.block_size}, {self.associativity})"
 
     def get_cost(self):
         if self.size == 32:
@@ -63,6 +68,9 @@ class Memory:
 
     def __str__(self):
         return f"{self.write_buffer} words buffer \t{self.first_access}/{self.next_access} access times"
+    
+    def __repr__(self):
+        return f"Memory({self.write_buffer}, {self.first_access}, {self.next_access})"
 
     def get_cost(self):
         s = (self.first_access, self.next_access)
@@ -88,6 +96,9 @@ class Computer:
             f"Clock frequency:\t{self.get_clock()} MHz\n"
             f"Total cost:\t\t{self.get_cost()/100} C$"
         )
+    
+    def __repr__(self):
+        return f"Computer({self.instruction_cache!r}, {self.data_cache!r}, {self.memory!r})"
 
     def get_cmd_args(self):
         return (
@@ -121,11 +132,11 @@ class Computer:
         stderr = result.stderr.decode("utf-8")
 
         if returncode == 5:
-            raise Exception(f"Assembly error\n{stderr}")
+            raise AsmExecutionException(f"Assembler error\n{stderr}")
         if returncode == 6:
-            raise Exception(f"Runtime error\n{stderr}")
+            raise AsmExecutionException(f"Runtime error\n{stderr}")
         if "maximum step limit" in stderr:
-            raise Exception(f"Inf loop?\n{stderr}")
+            raise AsmExecutionException(f"Inf loop?\n{stderr}")
         if returncode != 0:
             raise Exception(f"Unexpected return code {returncode}\n{stderr}")
 
@@ -139,12 +150,12 @@ class Computer:
             pos += 1
         L = L[pos : pos + 24 * 24]
         if len(L) != 24 * 24:
-            raise Exception("Wrong answer")
+            raise AsmExecutionException("Wrong answer")
         for x, y in zip(L, solution.solution):
             if abs(x - y) > 0.006:
                 for i in range(24):
                     print(*map(lambda l: "{:.2f}".format(l).rjust(6), L[i * 24 : (i + 1) * 24]))
-                raise Exception("Wrong answer")
+                raise AsmExecutionException("Wrong answer")
 
         cycles = int(a[-1])
         runtime = cycles / self.get_clock()  # μs
