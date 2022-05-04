@@ -83,6 +83,7 @@ def hill_climb(filename, iterations=200):
 
     best_computer = build_computer(best_parameters)
     print("\n\n=== BEST COMPUTER ===")
+    print("File:", filename)
     print(best_computer)
     print("Cycles:", best_cycles)
     print("Score:", round(best_score, 3), "μsC$\n")

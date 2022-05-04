@@ -24,10 +24,11 @@ if __name__ == "__main__":
 
     #computer = Computer(Cache(64, 8, 1), Cache(32, 8, 1), Memory(8, 30, 6))
 
-    print("Using", repr(computer))
-    print()
+    if input("Noptimera? (y/n): ") == "y":
+        print("Using", repr(computer))
+        print()
 
-    try:
-        noptimize(filename, computer)
-    except StartStopMarkersException as e:
-        print(str(e))
+        try:
+            noptimize(filename, computer)
+        except StartStopMarkersException as e:
+            print(str(e))
