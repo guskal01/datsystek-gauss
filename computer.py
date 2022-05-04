@@ -1,3 +1,4 @@
+import math
 import subprocess
 from struct import pack, unpack
 
@@ -92,7 +93,7 @@ class Computer:
         return (
             f"ibc{self.instruction_cache.block_count} ibs{self.instruction_cache.block_size} isa{self.instruction_cache.associativity} "
             f"dbc{self.data_cache.block_count} dbs{self.data_cache.block_size} dsa{self.data_cache.associativity} "
-            f"wbs{self.memory.write_buffer} fwa{self.memory.first_access} nwa{self.memory.next_access}"
+            f"wbs{self.memory.write_buffer} fwa{math.ceil(self.memory.first_access * self.get_clock() * 0.001)} nwa{math.ceil(self.memory.next_access * self.get_clock() * 0.001)}"
         )
 
     def get_clock(self):
