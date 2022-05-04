@@ -1,7 +1,7 @@
 import sys
 
 import optimizers
-from noptimizer import *
+from noptimizer import noptimize, StartStopMarkersException
 from computer import *
 
 if __name__ == "__main__":

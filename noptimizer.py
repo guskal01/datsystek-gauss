@@ -114,7 +114,7 @@ def noptimize(file, computer):
             f.writelines(test)
             f.writelines(postcode)
         try:
-            score, cycles = computer.run(tmp_file)
+            score, cycles = computer.run(tmp_file, print_wa=False)
         except AsmExecutionException as e:
             score = float('inf')
             cycles = float('inf')
