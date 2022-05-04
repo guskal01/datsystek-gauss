@@ -70,6 +70,7 @@ def hill_climb(filename, iterations=200):
                 curr_score = score
                 if score < best_score:
                     best_score = score
+                    best_cycles = cycles
                     best_parameters = [*parameters]
                     print("\n=== NEW BEST ===")
                     print(build_computer(parameters))
