@@ -22,6 +22,13 @@ def get_choices(parameters):
         r.append(choices[i][parameters[i]])
     return r
 
+def get_parameters(computer):
+    r = []
+    for i,param in enumerate([computer.instruction_cache.size, computer.instruction_cache.block_size, computer.instruction_cache.associativity,
+                              computer.data_cache.size, computer.data_cache.block_size, computer.data_cache.associativity,
+                              computer.memory.write_buffer, (computer.memory.first_access, computer.memory.next_access)]):
+        r.append(choices[i].index(param))
+    return r
 
 def build_computer(parameters):
     c = get_choices(parameters)
@@ -43,12 +50,18 @@ def random_change(parameters, p=0.5):
             return
 
 
-def hill_climb(filename, iterations=200):
+def hill_climb(filename, iterations=200, start_computer = None):
     threads = 3  # not faster to use more
-    parameters = [len(c) // 2 for c in choices]
+    if(start_computer == None):
+        parameters = [len(c) // 2 for c in choices]
+    else:
+        parameters = get_parameters(start_computer)
     best_score, best_cycles = evaluate(parameters, filename)
+    print("=== STARTING COMPUTER ===")
+    print(build_computer(parameters))
+    print("Cycles:", best_cycles)
+    print("Score:", round(best_score, 2), "μsC$\n")
     best_parameters = [*parameters]
-    curr_score = best_score
     seen = {tuple(parameters)}
     prev_print = 0
     for i in range(iterations):
@@ -65,23 +78,20 @@ def hill_climb(filename, iterations=200):
             results = executor.map(evaluate, batch, repeat(filename))
 
         for (score, cycles), new_parameters in zip(results, batch):
-            if score < curr_score:
+            if score < best_score:
                 parameters = new_parameters
-                curr_score = score
-                if score < best_score:
-                    best_score = score
-                    best_cycles = cycles
-                    best_parameters = [*parameters]
-                    print("\n=== NEW BEST ===")
-                    print(build_computer(parameters))
-                    print("Cycles:", cycles)
-                    print("Score:", round(score, 2), "μsC$\n")
+                best_score = score
+                best_cycles = cycles
+                print("\n=== NEW BEST ===")
+                print(build_computer(parameters))
+                print("Cycles:", cycles)
+                print("Score:", round(score, 2), "μsC$\n")
         p = int((i + 1) / iterations * 20)
         if p != prev_print:
             print(str(p * 5) + "%")
             prev_print = p
 
-    best_computer = build_computer(best_parameters)
+    best_computer = build_computer(parameters)
     print("\n\n=== BEST COMPUTER ===")
     print("File:", filename)
     print(best_computer)

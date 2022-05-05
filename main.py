@@ -11,7 +11,9 @@ if __name__ == "__main__":
         filename = input("Enter filename: ")
     filename = "../" + filename
     # score, computer = optimizers.exhaustive(filename)
-    score, computer = optimizers.hill_climb(filename, 35)
+
+    start_computer = None  # Computer(Cache(64, 8, 1), Cache(32, 8, 1), Memory(8, 30, 6))
+    score, computer = optimizers.hill_climb(filename, 40, start_computer)
 
 
     print("\n######### NOPTIMIZING #########")
