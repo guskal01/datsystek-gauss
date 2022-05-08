@@ -50,14 +50,17 @@ def random_change(parameters, p=0.5):
             return
 
 
-def hill_climb(filename, iterations=200, start_computer = None):
+def hill_climb(filename, iterations = 200, start_computer = None, mode = 'score'):
     threads = 3  # not faster to use more
+    mode = mode.upper()
+    assert(mode in ['SCORE', 'CYCLES'])
+    
     if(start_computer == None):
         parameters = [len(c) // 2 for c in choices]
     else:
         parameters = get_parameters(start_computer)
     best_score, best_cycles = evaluate(parameters, filename)
-    print("=== STARTING COMPUTER ===")
+    print("\n=== STARTING COMPUTER ===")
     print(build_computer(parameters))
     print("Cycles:", best_cycles)
     print("Score:", round(best_score, 2), "μsC$\n")
@@ -78,24 +81,26 @@ def hill_climb(filename, iterations=200, start_computer = None):
             results = executor.map(evaluate, batch, repeat(filename))
 
         for (score, cycles), new_parameters in zip(results, batch):
-            if score < best_score:
+            if (mode == 'SCORE' and score < best_score) or mode == 'CYCLES' and cycles < best_cycles:
                 parameters = new_parameters
                 best_score = score
                 best_cycles = cycles
-                print("\n=== NEW BEST ===")
+                print(f'\n=== NEW BEST FOR {mode} ===')
                 print(build_computer(parameters))
                 print("Cycles:", cycles)
                 print("Score:", round(score, 2), "μsC$\n")
+            
         p = int((i + 1) / iterations * 20)
         if p != prev_print:
             print(str(p * 5) + "%")
             prev_print = p
 
     best_computer = build_computer(parameters)
-    print("\n\n=== BEST COMPUTER ===")
+    print(f'\n\n=== BEST COMPUTER FOR {mode} ===')
     print("File:", filename)
     print(best_computer)
     print("Cycles:", best_cycles)
     print("Score:", round(best_score, 3), "μsC$\n")
+    best_value = best_score if mode == 'SCORE' else best_cycles
 
-    return (best_score, best_computer)
+    return (best_value, best_computer)

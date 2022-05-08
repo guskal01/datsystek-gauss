@@ -10,10 +10,11 @@ if __name__ == "__main__":
     else:
         filename = input("Enter filename: ")
     filename = "../" + filename
-    # score, computer = optimizers.exhaustive(filename)
+    
+    #score, score_computer, cycles, cycles_computer = optimizers.exhaustive(filename)
 
     start_computer = None  # Computer(Cache(64, 8, 1), Cache(32, 8, 1), Memory(8, 30, 6))
-    score, computer = optimizers.hill_climb(filename, 40, start_computer)
+    value, best_computer = optimizers.hill_climb(filename, 40, start_computer, 'score')
 
 
     print("\n######### NOPTIMIZING #########")
@@ -25,6 +26,7 @@ if __name__ == "__main__":
     print("Bästa koden sparas i noptimizer_best.s.\n")
 
     #computer = Computer(Cache(64, 8, 1), Cache(32, 8, 1), Memory(8, 30, 6))
+    computer = best_computer
 
     if input("Noptimera? (y/n): ") == "y":
         print("Using", repr(computer))
