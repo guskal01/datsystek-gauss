@@ -71,6 +71,9 @@ class Memory:
     
     def __repr__(self):
         return f"Memory({self.write_buffer}, {self.first_access}, {self.next_access})"
+    
+    def str_with_cycles(self, freq):
+        return f"{self.write_buffer} words buffer \t{self.first_access}/{self.next_access} ({self.get_access_cycles(freq)[0]}/{self.get_access_cycles(freq)[1]} cycles) access times"
 
     def get_cost(self):
         s = (self.first_access, self.next_access)
@@ -80,6 +83,10 @@ class Memory:
         if s == (30, 6):
             return 100 + buffer_cost
         raise Exception("Memory cost not found")
+    
+    def get_access_cycles(self, freq):
+        return (math.ceil(self.first_access * freq * 0.001),
+                math.ceil(self.next_access  * freq * 0.001))
 
 
 class Computer:
@@ -92,7 +99,7 @@ class Computer:
         return (
             f"Instruction cache:\t{self.instruction_cache}\n"
             f"Data cache:\t\t{self.data_cache}\n"
-            f"Memory:\t\t\t{self.memory}\n"
+            f"Memory:\t\t\t{self.memory.str_with_cycles(self.get_clock())}\n"
             f"Clock frequency:\t{self.get_clock()} MHz\n"
             f"Total cost:\t\t{self.get_cost()/100} C$"
         )
@@ -104,7 +111,7 @@ class Computer:
         return (
             f"ibc{self.instruction_cache.block_count} ibs{self.instruction_cache.block_size} isa{self.instruction_cache.associativity} "
             f"dbc{self.data_cache.block_count} dbs{self.data_cache.block_size} dsa{self.data_cache.associativity} "
-            f"wbs{self.memory.write_buffer} fwa{math.ceil(self.memory.first_access * self.get_clock() * 0.001)} nwa{math.ceil(self.memory.next_access * self.get_clock() * 0.001)}"
+            f"wbs{self.memory.write_buffer} fwa{self.memory.get_access_cycles(self.get_clock())[0]} nwa{self.memory.get_access_cycles(self.get_clock())[1]}"
         )
 
     def get_clock(self):
